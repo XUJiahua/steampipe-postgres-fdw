@@ -4,6 +4,7 @@ default: build
 STEAMPIPE_INSTALL_DIR ?= ~/.steampipe
 
 PLATFORM=$(shell uname)
+PG_CONFIG ?= pg_config
 GETTEXT_INCLUDE=$(shell dirname $(shell dirname $(shell readlink -f $(shell which gettext))))/include
 
 install: build
@@ -135,8 +136,8 @@ prebuild.go:
 	sed -i.bak 's|OS_PLACEHOLDER|$(shell go env GOOS)|' prebuild.go
 	
 	# replace known placeholders with values from 'pg_config'
-	sed -i.bak 's|INTERNAL_INCLUDE_PLACEHOLDER|$(shell pg_config --includedir)|' prebuild.go
-	sed -i.bak 's|SERVER_INCLUDE_PLACEHOLDER|$(shell pg_config --includedir-server)|' prebuild.go
+	sed -i.bak 's|INTERNAL_INCLUDE_PLACEHOLDER|$(shell $(PG_CONFIG) --includedir)|' prebuild.go
+	sed -i.bak 's|SERVER_INCLUDE_PLACEHOLDER|$(shell $(PG_CONFIG) --includedir-server)|' prebuild.go
 	sed -i.bak 's|DISCLAIMER|This is generated. Do not check this in to Git|' prebuild.go
 	sed -i.bak 's|LIB_INTL_PLACEHOLDER|$(GETTEXT_INCLUDE)|' prebuild.go
 	rm -f prebuild.go.bak
