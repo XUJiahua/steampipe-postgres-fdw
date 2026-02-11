@@ -465,13 +465,13 @@ findPaths(PlannerInfo *root, RelOptInfo *baserel, List *possiblePaths,
     foreach (attno_lc, attrnos)
     {
       AttrNumber attnum = lfirst_int(attno_lc);
-      ListCell *lc;
+      ListCell *lc2;
       List *clauses = NULL;
 
       /* Look in the equivalence classes. */
-      foreach (lc, root->eq_classes)
+      foreach (lc2, root->eq_classes)
       {
-        EquivalenceClass *ec = (EquivalenceClass *)lfirst(lc);
+        EquivalenceClass *ec = (EquivalenceClass *)lfirst(lc2);
         List *ec_clauses = clausesInvolvingAttr(baserel->relid,
                                                 attnum,
                                                 ec);
@@ -483,10 +483,10 @@ findPaths(PlannerInfo *root, RelOptInfo *baserel, List *possiblePaths,
         }
       }
       /* Do the same thing for the outer joins */
-      foreach (lc, list_union(root->left_join_clauses,
+      foreach (lc2, list_union(root->left_join_clauses,
                               root->right_join_clauses))
       {
-        RestrictInfo *ri = (RestrictInfo *)lfirst(lc);
+        RestrictInfo *ri = (RestrictInfo *)lfirst(lc2);
 
         if (isAttrInRestrictInfo(baserel->relid, attnum, ri))
         {
@@ -538,6 +538,9 @@ findPaths(PlannerInfo *root, RelOptInfo *baserel, List *possiblePaths,
             NULL,
 #if PG_VERSION_NUM >= 90500
             NULL,
+#endif
+#if PG_VERSION_NUM >= 170000
+            NIL, /* fdw_restrictinfo */
 #endif
             NULL);
 
