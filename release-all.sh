@@ -4,6 +4,13 @@ set -e
 # Create GitHub releases and upload artifacts for all plugins
 # Run this after build-all.sh completes successfully
 
+DEFAULT_VERSION="v1.0.0"
+FORK_ORG="xujiahua"
+
+declare -A VERSIONS=(
+  [jira]="v2.0.0"
+)
+
 PLUGINS=(
   btp
   confluence
@@ -17,10 +24,8 @@ PLUGINS=(
   zoom
 )
 
-VERSION="v1.0.0"
-FORK_ORG="xujiahua"
-
 for plugin in "${PLUGINS[@]}"; do
+  version="${VERSIONS[$plugin]:-$DEFAULT_VERSION}"
   REPO="${FORK_ORG}/steampipe-plugin-${plugin}"
   ARTIFACTS=(dist/steampipe_postgres_${plugin}.pg*.tar.gz)
 
@@ -30,13 +35,13 @@ for plugin in "${PLUGINS[@]}"; do
   fi
 
   echo "========================================"
-  echo "Creating release ${VERSION} for ${REPO}"
+  echo "Creating release ${version} for ${REPO}"
   echo "  Artifacts: ${ARTIFACTS[*]}"
   echo "========================================"
 
-  gh release create "${VERSION}" "${ARTIFACTS[@]}" \
+  gh release create "${version}" "${ARTIFACTS[@]}" \
     --repo "${REPO}" \
-    --title "${VERSION}" \
+    --title "${version}" \
     --notes "Steampipe PostgreSQL FDW for ${plugin}"
 
   echo "✓ ${REPO} release created"
