@@ -30,7 +30,7 @@ declare -A VERSIONS=(
 
 PLUGINS=(
   btp
-  confluence
+  # confluence  # SKIP: uses steampipe-plugin-sdk/v4, go mod tidy fails on deprecated otel packages
   cpi
   googlesheets
   hubspot

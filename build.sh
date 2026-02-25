@@ -119,7 +119,16 @@ for PG_VER in "${PG_VERSIONS[@]}"; do
   go run generate/generator.go templates . "$PLUGIN" "$PLUGIN_VERSION" "$ORIGINAL_MODULE"
 
   # Step 5: Add replace directive to redirect original module to fork
-  go mod edit -replace "${ORIGINAL_MODULE}=${FORK_MODULE}@${PLUGIN_VERSION}"
+  # For v2+ modules, append /vN suffix to both sides of the replace directive
+  MAJOR="${PLUGIN_VERSION%%.*}"  # e.g., v2.0.0 -> v2
+  if [ "$MAJOR" != "v0" ] && [ "$MAJOR" != "v1" ]; then
+    REPLACE_ORIGINAL="${ORIGINAL_MODULE}/${MAJOR}"
+    REPLACE_FORK="${FORK_MODULE}/${MAJOR}"
+  else
+    REPLACE_ORIGINAL="${ORIGINAL_MODULE}"
+    REPLACE_FORK="${FORK_MODULE}"
+  fi
+  go mod edit -replace "${REPLACE_ORIGINAL}=${REPLACE_FORK}@${PLUGIN_VERSION}"
 
   # Step 6: Tidy dependencies
   go mod tidy
