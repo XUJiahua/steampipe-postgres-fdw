@@ -90,13 +90,21 @@ if [ "${YES}" != "1" ]; then
 fi
 
 for PG_VER in "${PG_VERSIONS[@]}"; do
-  PG_CONFIG="/usr/lib/postgresql/${PG_VER}/bin/pg_config"
-
-  if [ ! -x "$PG_CONFIG" ]; then
-    echo "ERROR: pg_config not found for PG ${PG_VER} at ${PG_CONFIG}"
-    echo "Install with: sudo apt install postgresql-server-dev-${PG_VER}"
+  # Detect pg_config: try RPM layout first, then Debian layout
+  if [ -x "/usr/pgsql-${PG_VER}/bin/pg_config" ]; then
+    PG_CONFIG="/usr/pgsql-${PG_VER}/bin/pg_config"
+  elif [ -x "/usr/lib/postgresql/${PG_VER}/bin/pg_config" ]; then
+    PG_CONFIG="/usr/lib/postgresql/${PG_VER}/bin/pg_config"
+  else
+    echo "ERROR: pg_config not found for PG ${PG_VER}"
+    echo "  RPM:    /usr/pgsql-${PG_VER}/bin/pg_config"
+    echo "  Debian: /usr/lib/postgresql/${PG_VER}/bin/pg_config"
     exit 1
   fi
+
+  # Add pg_config's directory to PATH so generator.go and make can find it
+  PG_CONFIG_DIR=$(dirname "$PG_CONFIG")
+  export PATH="${PG_CONFIG_DIR}:${PATH}"
 
   echo "========================================"
   echo "Building ${PLUGIN} for PostgreSQL ${PG_VER}"

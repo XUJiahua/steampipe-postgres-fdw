@@ -8,16 +8,20 @@ DEFAULT_VERSION="v1.0.0"
 FORK_ORG="xujiahua"
 
 declare -A VERSIONS=(
+  [github]="v1.7.0"
   [jira]="v2.0.0"
+  [salesforce]="v1.4.0"
 )
 
 PLUGINS=(
   btp
   confluence
   cpi
+  github
   googlesheets
   hubspot
   jira
+  salesforce
   servicenow
   shopify
   stripe
@@ -35,16 +39,23 @@ for plugin in "${PLUGINS[@]}"; do
   fi
 
   echo "========================================"
-  echo "Creating release ${version} for ${REPO}"
+  echo "Releasing ${version} for ${REPO}"
   echo "  Artifacts: ${ARTIFACTS[*]}"
   echo "========================================"
 
-  gh release create "${version}" "${ARTIFACTS[@]}" \
-    --repo "${REPO}" \
-    --title "${version}" \
-    --notes "Steampipe PostgreSQL FDW for ${plugin}"
-
-  echo "✓ ${REPO} release created"
+  if gh release view "${version}" --repo "${REPO}" &>/dev/null; then
+    echo "Release ${version} already exists, uploading artifacts..."
+    gh release upload "${version}" "${ARTIFACTS[@]}" \
+      --repo "${REPO}" \
+      --clobber
+    echo "✓ ${REPO} artifacts uploaded"
+  else
+    gh release create "${version}" "${ARTIFACTS[@]}" \
+      --repo "${REPO}" \
+      --title "${version}" \
+      --notes "Steampipe PostgreSQL FDW for ${plugin}"
+    echo "✓ ${REPO} release created"
+  fi
   echo ""
 done
 

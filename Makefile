@@ -153,3 +153,36 @@ clean:
 # Usage: make release input="v1.7.2"
 release:
 	./scripts/upload_arm_asset.sh $(input)
+
+# Docker builder image (AlmaLinux 9, glibc 2.34)
+DOCKER_BUILDER_IMAGE ?= steampipe_fdw_builder
+DOCKER_GOMOD_VOLUME ?= steampipe-gomod-cache
+DOCKER_GOBUILD_VOLUME ?= steampipe-gobuild-cache
+
+docker-build:
+	docker build -f Dockerfile -t $(DOCKER_BUILDER_IMAGE) .
+
+docker-shell:
+	docker run -it --rm \
+		-v $(CURDIR):/tmp/ext \
+		-v $(DOCKER_GOMOD_VOLUME):/home/postgres/go/pkg/mod \
+		-v $(DOCKER_GOBUILD_VOLUME):/home/postgres/.cache/go-build \
+		$(DOCKER_BUILDER_IMAGE)
+
+# Usage: make docker-plugin plugin=salesforce version=v1.4.0 [pg_versions="16 17"]
+docker-plugin: docker-build
+	docker run --rm \
+		-v $(CURDIR):/tmp/ext \
+		-v $(DOCKER_GOMOD_VOLUME):/home/postgres/go/pkg/mod \
+		-v $(DOCKER_GOBUILD_VOLUME):/home/postgres/.cache/go-build \
+		$(DOCKER_BUILDER_IMAGE) \
+		bash -c 'cd /tmp/ext && YES=1 ./build.sh $(plugin) $(version) $(pg_versions)'
+
+# Usage: make docker-all
+docker-all: docker-build
+	docker run --rm \
+		-v $(CURDIR):/tmp/ext \
+		-v $(DOCKER_GOMOD_VOLUME):/home/postgres/go/pkg/mod \
+		-v $(DOCKER_GOBUILD_VOLUME):/home/postgres/.cache/go-build \
+		$(DOCKER_BUILDER_IMAGE) \
+		bash -c 'cd /tmp/ext && YES=1 ./build-all.sh'

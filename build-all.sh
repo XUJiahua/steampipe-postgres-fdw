@@ -15,9 +15,11 @@ declare -A ORIGINAL_MODULES=(
   [btp]="github.com/ajmaradiaga/steampipe-plugin-btp"
   [confluence]="github.com/ellisvalentiner/steampipe-plugin-confluence"
   [cpi]="github.com/vadimklimov/steampipe-plugin-cpi"
+  [github]="github.com/turbot/steampipe-plugin-github"
   [googlesheets]="github.com/turbot/steampipe-plugin-googlesheets"
   [hubspot]="github.com/turbot/steampipe-plugin-hubspot"
   [jira]="github.com/turbot/steampipe-plugin-jira"
+  [salesforce]="github.com/turbot/steampipe-plugin-salesforce"
   [servicenow]="github.com/turbot/steampipe-plugin-servicenow"
   [shopify]="github.com/turbot/steampipe-plugin-shopify"
   [stripe]="github.com/turbot/steampipe-plugin-stripe"
@@ -25,16 +27,20 @@ declare -A ORIGINAL_MODULES=(
 )
 
 declare -A VERSIONS=(
+  [github]="v1.7.0"
   [jira]="v2.0.0"
+  [salesforce]="v1.4.0"
 )
 
 PLUGINS=(
   btp
   # confluence  # SKIP: uses steampipe-plugin-sdk/v4, go mod tidy fails on deprecated otel packages
   cpi
+  github
   googlesheets
   hubspot
   jira
+  salesforce
   servicenow
   shopify
   stripe
